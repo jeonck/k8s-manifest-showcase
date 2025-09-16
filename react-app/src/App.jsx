@@ -9,6 +9,7 @@ function App() {
         </h1>
 
         {/* 여기에 프로젝트별 컨텐츠 추가 */}
+        {/* Adding a comment to trigger a new push */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 shadow-xl">
           <p className="text-white text-center">
             Your content goes here
