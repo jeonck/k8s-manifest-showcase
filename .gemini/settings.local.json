@@ -1,0 +1,10 @@
+{
+  "projectName": "k8s-manifest-showcase",
+  "githubRepoUrl": "https://github.com/jeonck/k8s-manifest-showcase",
+  "automationLevel": "full",
+  "techStack": "Vite + React + Tailwind",
+  "deployment": {
+    "platform": "github-pages",
+    "url": "https://jeonck.github.io/k8s-manifest-showcase/"
+  }
+}
