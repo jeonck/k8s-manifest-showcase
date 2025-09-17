@@ -8,6 +8,14 @@
     }
   },
   "spec": {
+    "tls": [
+      {
+        "hosts": [
+          "example.com"
+        ],
+        "secretName": "example-tls-secret"
+      }
+    ],
     "rules": [
       {
         "host": "example.com",
