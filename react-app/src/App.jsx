@@ -12,7 +12,7 @@ function App() {
       if (!manifestType) return;
       setIsLoading(true);
       try {
-        const response = await fetch(`/data/${manifestType.toLowerCase()}.json`);
+        const response = await fetch(`${import.meta.env.BASE_URL}data/${manifestType.toLowerCase()}.json`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
