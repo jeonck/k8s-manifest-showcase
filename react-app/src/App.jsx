@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import yaml from 'js-yaml';
 
 const manifestTypes = ['Deployment', 'Service', 'Ingress'];
 
@@ -6,6 +7,7 @@ function App() {
   const [manifestType, setManifestType] = useState(manifestTypes[0]);
   const [manifestContent, setManifestContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     const fetchManifest = async () => {
@@ -17,7 +19,7 @@ function App() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setManifestContent(JSON.stringify(data, null, 2));
+        setManifestContent(yaml.dump(data));
       } catch (error) {
         console.error("Failed to fetch manifest:", error);
         setManifestContent('Failed to load manifest.');
@@ -29,6 +31,13 @@ function App() {
     fetchManifest();
   }, [manifestType]);
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(manifestContent).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 text-white p-8 font-sans">
       <div className="max-w-6xl mx-auto">
@@ -38,7 +47,7 @@ function App() {
         </header>
 
         <div className="bg-black/20 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-          <div className="p-4 bg-black/20 border-b border-white/10">
+          <div className="p-4 bg-black/20 border-b border-white/10 flex justify-between items-center">
             <div className="flex space-x-2">
               {manifestTypes.map((type) => (
                 <button
@@ -55,13 +64,21 @@ function App() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 relative">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
             ) : (
-              <pre className="bg-gray-900/70 rounded-lg p-4 overflow-auto text-sm font-mono leading-relaxed">
-                <code>{manifestContent}</code>
-              </pre>
+              <div className="relative">
+                <button 
+                  onClick={handleCopy}
+                  className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 px-2 rounded text-xs transition-all"
+                >
+                  {isCopied ? 'Copied!' : 'Copy'}
+                </button>
+                <pre className="bg-gray-900/70 rounded-lg p-4 overflow-auto text-sm font-mono leading-relaxed">
+                  <code>{manifestContent}</code>
+                </pre>
+              </div>
             )}
           </div>
         </div>
