@@ -10,6 +10,7 @@
   "spec": {
     "rules": [
       {
+        "host": "your-hostname.com",
         "http": {
           "paths": [
             {
