@@ -89,7 +89,7 @@ function App() {
               <div className="text-center py-8">Loading...</div>
             ) : (
               <div>
-                <p className="mb-4 text-gray-300 italic">{descriptions[manifestType]}</p>
+                <p className="mb-4 text-gray-300">{descriptions[manifestType]}</p>
                 <div className="relative">
                   <button 
                     onClick={handleCopy}
