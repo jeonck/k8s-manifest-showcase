@@ -4,6 +4,17 @@
 이 파일은 어떤 프로젝트에서든 복사하여 사용할 수 있는 범용 설정입니다.
 `gemini --config .gemini.json`
 
+## ⚠️ 버전 관리 제외 (.gitignore)
+`GEMINI.md` 파일과 `.gemini` 디렉토리는 Gemini의 로컬 자동화 및 설정을 위한 파일입니다. 프로젝트의 소스 코드와는 무관하므로 Git 버전 관리에서 제외해야 합니다.
+
+프로젝트 루트의 `.gitignore` 파일에 다음 내용을 추가하세요.
+
+```gitignore
+# Gemini-specific files
+GEMINI.md
+.gemini/
+```
+
 ## 🎯 핵심 동작 원칙 (Universal)
 
 ### 완전 자동화 모드 (Full Automation Mode)
@@ -34,13 +45,67 @@
 
 ## 🚨 배포 실패 방지 체크리스트 (실전 검증됨)
 
-(기존 체크리스트에 아래 항목 추가)
-
 - **`vite.config.js` `base` 경로 불일치**: `settings.local.json`의 `projectName`이 실제 GitHub 저장소 이름과 다를 경우, 배포된 페이지가 정상적으로 로드되지 않습니다. **`projectName`이 저장소 이름과 정확히 일치하는지 반드시 확인해야 합니다.**
+- **구식 배포 워크플로우 사용**: `peaceiris/actions-gh-pages`와 같은 액션 대신, GitHub의 공식 `actions/deploy-pages`를 사용하는 최신 워크플로우를 적용하세요. 이 방식은 별도 브랜치 관리가 필요 없으며 더 안정적입니다.
+- **저장소 설정**: 배포 워크플로우 실행 전, 저장소의 **Settings > Pages**에서 "Build and deployment" 소스를 **"GitHub Actions"**로 설정했는지 확인하세요.
 
-## 🚀 Vite + React + Tailwind CSS 프로젝트 표준 (Universal Template)
+## 🚀 표준 GitHub Pages 배포 워크플로우 (`.github/workflows/deploy.yml`)
+아래 내용을 복사하여 `.github/workflows/deploy.yml` 파일을 생성하세요.
 
-(이하 프로젝트 구조, 필수 설정 파일, 배포 워크플로우 등은 이전과 동일하게 유지됩니다.)
+```yaml
+name: Deploy React App to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+# GITHUB_TOKEN의 권한을 설정하여 GitHub Pages에 배포할 수 있도록 합니다.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시 배포를 하나만 허용하고, 진행 중인 실행과 최신 대기열 사이에 대기 중인 실행을 건너뜁니다.
+# 하지만 진행 중인 실행은 프로덕션 배포가 완료되도록 취소하지 않습니다.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        # 'react-app' 디렉토리로 이동하여 npm install 실행
+        run: cd react-app && npm install
+      - name: Build
+        # 'react-app' 디렉토리로 이동하여 npm run build 실행
+        run: cd react-app && npm run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # './react-app/dist' 디렉토리 업로드
+          path: ./react-app/dist
+
+  deploy:
+    # 'build' 작업이 성공적으로 완료되어야 실행됩니다.
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
 
 ## 🔄 초기 설정 완전 자동화 워크플로우
 
@@ -52,23 +117,25 @@
 # 2단계: 프로젝트 구조 생성
 mkdir -p react-app/src react-app/public .github/workflows
 
-# 3-11단계: 설정 및 소스 파일 생성 (병렬 처리)
+# 3단계: 설정 및 소스 파일 생성 (병렬 처리)
 # settings.local.json의 projectName 값을 사용하여 파일 내용 자동 생성
+Write .gitignore # Gemini 관련 파일 제외
 Write package.json
 Write vite.config.js # base: '/{projectName}/' 설정
+Write .github/workflows/deploy.yml # 표준 GitHub Pages 배포 워크플로우 사용
 # ... 기타 설정 파일
 Write src/App.jsx (범용 템플릿 사용)
 
-# 12-14단계: Git 초기화 및 원격 저장소 연결
+# 4단계: Git 초기화 및 원격 저장소 연결
 git init
 git remote add origin [settings.local.json의 githubRepoUrl 값]
 git branch -m main
 
-# 15-17단계: 의존성 설치 및 빌드 테스트
+# 5단계: 의존성 설치 및 빌드 테스트
 cd react-app && npm install
 npm run build
 
-# 18-20단계: 초기 커밋 및 푸시
+# 6단계: 초기 커밋 및 푸시
 git add .
 git commit -m "feat: Initial project setup"
 git push origin main
