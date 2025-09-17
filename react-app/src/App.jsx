@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import yaml from 'js-yaml';
 
-const manifestTypes = ['Deployment', 'Service', 'Pod', 'Ingress', 'ConfigMap', 'Secret', 'StatefulSet', 'Job'];
+const manifestTypes = ['Deployment', 'Service', 'Pod', 'Ingress', 'ConfigMap', 'Secret', 'StatefulSet', 'DaemonSet', 'Job', 'CronJob', 'PersistentVolume', 'PersistentVolumeClaim', 'ServiceAccount', 'Role', 'RoleBinding', 'ClusterRole', 'ClusterRoleBinding'];
 
 function App() {
   const [manifestType, setManifestType] = useState(manifestTypes[0]);
